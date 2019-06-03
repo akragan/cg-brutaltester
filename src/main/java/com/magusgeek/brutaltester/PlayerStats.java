@@ -90,7 +90,26 @@ public class PlayerStats {
 
 		return sb.toString();
 	}
+	
+	public String toStringAbsolute() {
+		StringBuffer sb = new StringBuffer();
+		
+		if (n==2) {
+			sb.append(" ")
+			.append(global[0][VICTORY])
+			.append(" / ").append(global[0][DRAW])
+			.append(" / ").append(global[0][DEFEAT]);
+		}else {
+			for (int i = 0; i < n; ++i) {
+				sb.append(" ")
+				.append(global[i][VICTORY]);
+			}
+		}
 
+		return sb.toString();
+	}
+	
+	
 	synchronized public void print() {
 		/*
         +----------+----------+----------+----------+----------+

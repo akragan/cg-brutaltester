@@ -55,11 +55,11 @@ public class GameThread extends Thread {
 			command[splitted.length + i * 2] = "-p" + (i + 1);
 			command[splitted.length + i * 2 + 1] = playersCmd.get(i);
 		}
-		
+
 		if (haveSeedArgs) {
 			this.n *= playersCount;
 			refereeInputIdx = splitted.length + playersCount * 2 + 1;
-			command[refereeInputIdx -1] = "-d";
+			command[refereeInputIdx - 1] = "-d";
 			command[refereeInputIdx] = "";
 		}
 
@@ -93,12 +93,13 @@ public class GameThread extends Thread {
 				int seedRotate[] = SeedGenerator.getSeed(playersCount);
 				if (swap) {
 					command[refereeInputIdx] = "seed=" + seedRotate[0];
-					for (int i = 0; i < playersCount; i ++) {
+					for (int i = 0; i < playersCount; i++) {
 						command[pArgIdx[i]] = playersCmd.get((i + seedRotate[1]) % playersCount);
 					}
 				} else if (SeedGenerator.repeteableTests) {
 					command[refereeInputIdx] = "seed=" + SeedGenerator.nextSeed();
 				}
+				LOG.debug("Running command:" + String.join(" ",command));
 
 				referee = new BrutalProcess(Runtime.getRuntime().exec(command));
 
@@ -111,25 +112,20 @@ public class GameThread extends Thread {
 				try (Scanner in = referee.getIn()) {
 					for (int pi = 0; pi < playersCount; ++pi) {
 						int i = swap ? (pi + seedRotate[1]) % playersCount : pi;
-						if (in.hasNextInt())
-						{
+						if (in.hasNextInt()) {
 							scores[i] = in.nextInt();
-						}
-						else
-						{
-							while(!in.hasNextInt() && in.hasNext())
-							{
+						} else {
+							while (!in.hasNextInt() && in.hasNext()) {
 								fullOut.append(in.nextLine()).append("\n");
 							}
 
 							// Try again after referee messages are out of the way
-							if (in.hasNextInt())
-							{
+							if (in.hasNextInt()) {
 								scores[i] = in.nextInt();
 							}
 						}
 
-						if (scores[i] < 0) {
+						if (scores[i] < 0 && scores[i] != -1) {
 							error = true;
 							LOG.error("Negative score during game " + game + " p" + i + ":" + scores[i]);
 						}
@@ -140,8 +136,7 @@ public class GameThread extends Thread {
 					}
 				}
 
-				if (fullOut.length()>0)
-				{
+				if (fullOut.length() > 0) {
 					LOG.error("Problem with referee output in game" + game + ". Output content:" + fullOut);
 				}
 
@@ -155,7 +150,8 @@ public class GameThread extends Thread {
 
 				stats.add(scores);
 
-				LOG.info(new StringBuilder().append("End of game ").append(game).append("\t").append(stats));
+				LOG.info(new StringBuilder().append("End of game ").append(game).append("\t").append(stats).append("\t")
+						.append(stats.toStringAbsolute()));
 
 			} catch (Exception exception) {
 				LOG.error("Exception in game " + game, exception);
